@@ -3,6 +3,38 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 
+def undesired_objects(image):
+    image = image.astype('uint8')
+    nb_components, output, stats, centroids = cv2.connectedComponentsWithStats(image, connectivity=8)
+    sizes = stats[:, -1]
+
+    max_label = 1
+    max_size = sizes[1]
+    for i in range(2, nb_components):
+        if sizes[i] > max_size:
+            max_label = i
+            max_size = sizes[i]
+
+    img2 = np.zeros(output.shape)
+    img2[output == max_label] = 255
+    cv2.imshow("Biggest component", img2)
+    cv2.waitKey()
+
+
+
+
+def our_connected_components(image):
+    image = image.astype('uint8')
+    nb_components, output, stats, centroids = cv2.connectedComponentsWithStats(image, connectivity=4)
+    sizes = stats[:, -1]
+    max_label = 1
+    max_size = sizes[1]
+    for i in range(2, nb_components):
+        if sizes[i] > max_size:
+            max_label = i
+            max_size = sizes[i]
+
+
 def connected_component_label(path):
     # Getting the input image
     img = cv2.imread(path, 0)
@@ -33,8 +65,6 @@ def connected_component_label(path):
     plt.axis('off')
     plt.title("Image after Component Labeling")
     plt.show()
-
-
 
 
 def funcCan(self):
@@ -72,7 +102,20 @@ binary_thresh = 10
 print(no_back.shape)
 no_back = np.where(no_back < 30, 0, no_back)
 print(no_back.shape)
+
 ret, thresh = cv2.threshold(no_back, binary_thresh, 255, cv2.THRESH_BINARY)
+
+# Extract Feature 1 (B:W ratio)
+thresh_b_w = list(np.ravel(thresh))
+thresh_b = [e for e in thresh_b_w if e == 0]
+thresh_w = [e for e in thresh_b_w if e == 255]
+black_to_white_ratio_feature = len(thresh_b) / len(thresh_w)
+
+print(black_to_white_ratio_feature)
+
+# Send to def
+
+
 # Connected components
 no_back2 = no_back
 num_labels, labels = cv2.connectedComponents(no_back)
@@ -84,7 +127,6 @@ labeled_img = cv2.merge([label_hue, blank_ch, blank_ch])
 labeled_img = cv2.cvtColor(labeled_img, cv2.COLOR_HSV2BGR)
 plt.show()
 
-
 cv2.namedWindow('canny')
 # create trackbars for given thresholds
 thresh1 = 255
@@ -94,12 +136,51 @@ cv2.createTrackbar('thresh2', 'canny', thresh2, 255, funcCan)
 
 # Call the
 funcCan(self=0)
-Canny_edge = cv2.Canny(no_back, thresh1, thresh2)
+canny_edge = cv2.Canny(no_back, thresh1, thresh2)
 
+# Extract Feature 2 (no of components from edge canny)
+ret, labels = cv2.connectedComponents(canny_edge)
+no_of_components_feature = ret
 
+# Extract Feature 3 (length of all edges detected)
+canny_edge_flat = list(np.ravel(canny_edge))
+total_edge_length_feature = [e for e in canny_edge_flat if e == 255]
+total_edge_length_feature = len(total_edge_length_feature)
+print(total_edge_length_feature)
 
-result = np.hstack((img, nothing_img, no_back, thresh, Canny_edge))
+# Extract Feature 4 (from connectedComponentsWithStats -> no_of_components, [width, height, area, centroids - Of biggest component])
+nb_components, output, stats, centroids = cv2.connectedComponentsWithStats(canny_edge, connectivity=8)
+
+print("ooo")
+index_of_biggest_component = np.argsort(-stats[:,-1])[1]
+print("ooo")
+print(nb_components)
+print("ooo")
+print(stats)
+print("ooo")
+print(output)
+print("ooo")
+print(centroids)
+indexes_group = np.argsort(stats[:, cv2.CC_STAT_AREA])
+stats = stats[indexes_group]
+biggest_component = stats[len(stats)-2]
+width_bounding_box_biggest = biggest_component[2]
+height_bounding_box_biggest = biggest_component[3]
+area_bounding_box_biggest = biggest_component[4]
+print(biggest_component)
+
+x_centroid_of_biggest = centroids[index_of_biggest_component][0]
+y_centroid_of_biggest = centroids[index_of_biggest_component][1]
+
+# y_centroid_of_biggest = centroids[index_of_biggest_component][1]
+print("pppp")
+# print(x_centroid_of_biggest)
+print()
+print("pppp")
+result = np.hstack((img, nothing_img, no_back, thresh, canny_edge))
 cv2.imshow('try', result)
+
+
 
 cv2.waitKey(0)
 cv2.destroyAllWindows()
