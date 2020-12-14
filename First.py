@@ -106,6 +106,8 @@ print(no_back.shape)
 ret, thresh = cv2.threshold(no_back, binary_thresh, 255, cv2.THRESH_BINARY)
 
 # Extract Feature 1 (B:W ratio)
+# Extract Feature 1 (B:W ratio)
+# Extract Feature 1 (B:W ratio)
 thresh_b_w = list(np.ravel(thresh))
 thresh_b = [e for e in thresh_b_w if e == 0]
 thresh_w = [e for e in thresh_b_w if e == 255]
@@ -148,8 +150,15 @@ total_edge_length_feature = [e for e in canny_edge_flat if e == 255]
 total_edge_length_feature = len(total_edge_length_feature)
 print(total_edge_length_feature)
 
-# Extract Feature 4 (from connectedComponentsWithStats -> no_of_components, [width, height, area, centroids - Of biggest component])
+# Extract Features (from connectedComponentsWithStats -> no_of_components, [width, height, area, centroids - Of biggest component])
+# Extract Feature 4 (from connectedComponentsWithStats) no_of_components
+# Extract Feature 5 (from connectedComponentsWithStats) [width - Of biggest component])
+# Extract Feature 6 (from connectedComponentsWithStats) [height Of biggest component])
+# Extract Feature 7 (from connectedComponentsWithStats) [area - Of biggest component])
+# Extract Feature 8 (from connectedComponentsWithStats) [centroids - Of biggest component])
+
 nb_components, output, stats, centroids = cv2.connectedComponentsWithStats(canny_edge, connectivity=8)
+
 
 print("ooo")
 index_of_biggest_component = np.argsort(-stats[:,-1])[1]
@@ -181,6 +190,15 @@ result = np.hstack((img, nothing_img, no_back, thresh, canny_edge))
 cv2.imshow('try', result)
 
 
+# Extract Feature 9 Contours - no_of contours
+
+
+
+
+
 
 cv2.waitKey(0)
 cv2.destroyAllWindows()
+
+# #########################################
+
